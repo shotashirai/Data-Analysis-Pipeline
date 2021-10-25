@@ -4,7 +4,7 @@ import pandas as pd
 def data_profile(df):
     """ Data profile
     
-    Parmerters
+    Parameters
     ----------
     df: dataframe
 

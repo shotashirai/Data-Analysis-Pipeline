@@ -9,7 +9,7 @@ Source data:
     - Uber trip data: https://github.com/fivethirtyeight/uber-tlc-foil-response
     - Histroical weather in NY: https://www.kaggle.com/selfishgene/historical-hourly-weather-data?select=humidity.csv
 
-Required external codes/moduls: provided by 'my_pipeline'
+Required external codes/modules: provided by 'my_pipeline'
 
 This code predicts Uber Demand in New York based on the analyses on 
 the Jupyter Notebook (Uber-Demand-Forecasting_EDA_Model.ipynb) in 'EDA_jupyter_notebook' directory. 
@@ -23,7 +23,6 @@ import os, sys
 sys.path.append(os.pardir) # to import files in the parent directory
 import numpy as np
 import pandas as pd
-from itertools import compress
 from datetime import date, datetime
 from functools import reduce
 import warnings
@@ -41,7 +40,7 @@ from my_pipeline.feat_engineer import *
 ###################################################################################
 # Import data 
 ###################################################################################
-# Data is sotred in the "data" directory
+# Data is stored in the "data" directory
 dir_name_Uber = 'data/uber-tlc-foil-response/uber-trip-data'
 dir_name_Weather = 'data/weather'
 
