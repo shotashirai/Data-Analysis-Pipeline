@@ -17,5 +17,5 @@ def load_file(dir_name, file_name):
     """
     
     df = pd.read_csv(dir_name + '/' + file_name)
-    df.name = file_name
+    df.name = file_name.replace('.csv', '')
     return df
