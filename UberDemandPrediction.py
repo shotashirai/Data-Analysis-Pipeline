@@ -1,20 +1,18 @@
 # coding: utf-8
 
 """ 
-Code: TitanicSurvivalPrediction.py
+Code: UberDemandPrediction.py
 Author: Shota Shirai
-Input: train.csv, test.csv
-Output: survival_prediction_(model name).csv
-
+Input: uber-raw-data-janjune-15.csv, weather data in NY
+Output: 
 Source data: 
     - Uber trip data: https://github.com/fivethirtyeight/uber-tlc-foil-response
     - Histroical weather in NY: https://www.kaggle.com/selfishgene/historical-hourly-weather-data?select=humidity.csv
 
 Required external codes/moduls: provided by 'my_pipeline'
 
-This code processes the titanic passenger data provided by Kaggle based on the analyses 
-on the Jupyter Notebook (TitanicSurvivalPrediction_EDA_Model.ipynb) 
-in 'EDA_jupyter_notebook' directory. 
+This code predicts Uber Demand in New York based on the analyses on 
+the Jupyter Notebook (Uber-Demand-Forecasting_EDA_Model.ipynb) in 'EDA_jupyter_notebook' directory. 
 
 Note: Tested Python version 3.8.10
 """
