@@ -4,6 +4,9 @@ from sklearn.linear_model import LinearRegression
 from boruta import BorutaPy
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_validate
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error)
 
 class BinaryLinearRegression:
     """ Linear Regression model for binary classification
@@ -143,7 +146,116 @@ def cls_model_deployer(models, X_train, y_train, X_test
                                 }
     return results
 
+# Custom function for time series analys using XGBoost
+def prediction_XGBoost(df_train, df_test, model, target_list
+                       , feature_select=False, log_transform=False, include_borough=False):
+    
+    def _mape(true, pred): 
+        true, pred = np.array(true), np.array(pred)
+        return np.mean(np.abs((true - pred) / true)) * 100
+    
+    results = {}
+    for target in target_list:
+#         print(model)
+        print('Forecasting:'+target)
+        new_df_train = df_train.copy()
+        new_df_test = df_test.copy()
+        
+        # Define Y_train and Y_test (Target label)
+        Y_train = new_df_train[target]
+        Y_test = new_df_test[target]
+        
+        
+        drop_list = target_list.copy() # list of dropped variables
 
+        ##----- When rides variables for majour borough are not included ------------------##
+        if include_borough:
+            del_borough_list = target_list.copy()
+            del_borough_list.remove(target)
+            for del_borough in del_borough_list:
+                all_columns_df_model = list(df_model.columns) # all columns of df_train
+                drop_borough_col = df_train.columns.str.contains(del_borough+'_') #boolean
+                drop_borough_list = list(compress(col_name_df_model, drop_borough_col))
+                # Add dropped columns on the drop_list
+                drop_list = drop_list + drop_borough_list
+        ##---------------------------------------------------------------------------------##
+        
+        # Define X_train and X_test (Features)
+        X_train = new_df_train.drop(drop_list, axis=1)
+        X_test = new_df_test.drop(drop_list, axis=1)
+        
+        
+        
+        # Feature selection----------------------------------------------------------------##
+        if feature_select:
+            feature_selector =BorutaPy(model
+                                   ,n_estimators='auto' 
+                                   ,verbose=0 # 0: no output,1: displays iteration number,2: which features have been selected already
+                                   ,alpha=0.1
+                                   ,max_iter=100
+                                   ,random_state=42
+                                  )
+            feature_selector.fit(X_train.values, Y_train.values)
+            # Select only selected feature
+            X_train = X_train.iloc[:,feature_selector.support_]
+            X_test = X_test.iloc[:,feature_selector.support_]
+        
+        # ---------------------------------------------------------------------------------##
+        
+        
+        # Fitting
+        model.fit(
+            X_train, Y_train, 
+            eval_set=[(X_train, Y_train), (X_test, Y_test)], 
+            verbose=0
+#             early_stopping_rounds = 10
+        )
+        
+        # Prediction
+        Y_predict = model.predict(X_test)
+        if log_transform:
+            # Accuracy (RMSE)
+            mse = mean_squared_error(Y_test,Y_predict)
+            rmse = np.sqrt(mse)
+            print('RMLSE: ' + str(np.round(rmse, 2)))
 
+            # Accuracy (MAPE)
+            mape = _mape(np.expm1(Y_test), np.expm1(Y_predict))
+            print('MAPE: ' + str(np.round(mape, 2)) +'%')
+        
+            # Results
+            results[target] = {'feature_importances': model.feature_importances_
+                               ,'mape': mape
+                               ,'rmse': rmse
+                               ,'X_train': X_train
+                               ,'X_test': X_test
+                               ,'Y_train': np.expm1(Y_train)
+                               ,'Y_test': np.expm1(Y_test)
+                               ,'Y_predict': np.expm1(Y_predict)
+                          }
+            
+        else:
+            
+            # Accuracy (RMSE)
+            mse = mean_squared_error(Y_test, Y_predict)
+            rmse = np.sqrt(mse)
+            print('RMSE: ' + str(np.round(rmse, 2)))
+
+            # Accuracy (MAPE)
+            mape = _mape(Y_test, Y_predict)
+            print('MAPE: ' + str(np.round(mape, 2)) +'%')
+            
+            # Results
+            results[target] = {'feature_importances': model.feature_importances_
+                               ,'mape': mape
+                               ,'rmse': rmse
+                               ,'X_train': X_train
+                               ,'X_test': X_test
+                               ,'Y_train': Y_train
+                               ,'Y_test': Y_test
+                               ,'Y_predict': Y_predict
+                              }
+            
+    return results
 
         
