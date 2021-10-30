@@ -18,7 +18,7 @@ def repalce_nan_str(df, col_names, new_strs):
     -------
     df: nan is replaced by new string
     """
-    # Repalce nan values in each column 
+    # Replace nan values in each column 
     for col, rep_value in zip(col_names, new_strs):
         df[col] = df[col].fillna(rep_value)
 
