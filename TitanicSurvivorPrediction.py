@@ -6,8 +6,8 @@ Author: Shota Shirai
 Input: train.csv, test.csv
 Output: survival_prediction_(model name).csv
 
-Source data: Kaggle - Titnaic Survival Prediction (https://www.kaggle.com/c/titanic/data)
-Required external codes/moduls: provided by 'my_pipeline'
+Source data: Kaggle - Titanic Survival Prediction (https://www.kaggle.com/c/titanic/data)
+Required external codes/modules: provided by 'my_pipeline'
 
 This code processes the titanic passenger data provided by Kaggle based on the analyses 
 on the Jupyter Notebook (TitanicSurvivalPrediction_EDA_Model.ipynb) 
@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier as DTC
+# from sklearn.tree import DecisionTreeClassifier as DTC
 from sklearn.ensemble import RandomForestClassifier as RFC
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.ensemble import ExtraTreesClassifier as ETC
@@ -36,8 +36,9 @@ from xgboost import XGBClassifier as XGB
 from my_pipeline.load import load_file
 from my_pipeline.dataprofile import data_profile
 from my_pipeline.datacleaning import *
-from my_pipeline.model import * 
+from my_pipeline.model import  cls_model_deployer
 from my_pipeline.save import save_prediction_csv, save_score_csv
+from my_pipeline.utils import memory_usage
 ###################################################################################
 # Import data 
 ###################################################################################
@@ -72,7 +73,7 @@ df_full['Cabin_label']=df_full['Cabin'].str.get(0)
 # data_profile(df_full)
 
 # Age -----------------------------------------------------------------------------
-# Select variables for estiamtion
+# Select variables for estimation
 df_age_model = df_full[['Age', 'Pclass', 'Sex', 'Parch', 'SibSp']]
 df_full = replace_nan_rfr(df_full, df_age_model, 'Age')
 
@@ -124,7 +125,7 @@ Survived_list=set(Male_Adult_list[Male_Adult_list.apply(lambda x:x==1)].index)
 # print('Dead_list = ', Dead_list)
 # print('Survived_list = ', Survived_list)
 
-# Based on dead/survived list, repalce Sex, Age, Title to typiocal data for each case 
+# Based on dead/survived list, replace Sex, Age, Title to typical data for each case 
 df_full.loc[(df_full['Survived'].isnull()) & (df_full['Surname'].apply(lambda x:x in Dead_list)),\
              ['Sex','Age','Title']] = ['male',28.0,'Mr']
 df_full.loc[(df_full['Survived'].isnull()) & (df_full['Surname'].apply(lambda x:x in Survived_list)),
@@ -191,16 +192,17 @@ models = {
         )
 } 
 
-# Build models (Feature selection (by BourutaPy) does not works) TODO: Solve the feature selection for those models
+# Build models (Feature selection (by BourutaPy) does not works) 
+# TODO: Solve the feature selection for those models
 
 models_NoFeatSel = {
     'Logistic Regression': LogisticRegression(n_jobs=-1)
     , 'Linear SVC': LinearSVC(
         random_state=rand_seed
     )
-    , 'SVC': SVC(
-        random_state=rand_seed
-    )
+    # , 'SVC': SVC(
+    #     random_state=rand_seed
+    # )
 }
 
 
