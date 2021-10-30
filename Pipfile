@@ -12,6 +12,10 @@ boruta = "*"
 xgboost = "*"
 seaborn = "*"
 plotly = "*"
+line-profiler = "*"
+snakeviz = "*"
+memory-profiler = "*"
+psutil = "*"
 
 [dev-packages]
 
