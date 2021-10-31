@@ -5,9 +5,9 @@ from sklearn.linear_model import LinearRegression
 from boruta import BorutaPy
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_validate
-from sklearn.metrics import (mean_absolute_error,
-                             mean_absolute_percentage_error,
-                             mean_squared_error)
+from sklearn.metrics import mean_squared_error
+import warnings
+warnings.filterwarnings('ignore')
 
 class BinaryLinearRegression:
     """ Linear Regression model for binary classification
@@ -51,30 +51,35 @@ def cls_model_deployer(models, X_train, y_train, X_test
     if gs_params is None:
         gs_params = {k:None for k in models.keys()}
 
+    ##################################################################################
+    # Feature Selection 
+    ##################################################################################
+    if feature_select:
+        import lightgbm as lgb
+        from sklearn.ensemble import RandomForestClassifier as RFC
+
+        # model_boruta = lgb.LGBMClassifier(num_boost_round=100)
+        model_boruta = RFC(max_depth=7, n_jobs=-1, class_weight='balanced')
+
+        print('===== Feature selection by Boruta starts... =====')
+        feature_selector = BorutaPy(
+            model_boruta
+            , n_estimators='auto'
+            , random_state=42
+            , verbose=0                
+        )
+        feature_selector.fit(X_train.values, y_train.values)
+        print('Selected Feature:') 
+        print(X_train.columns[feature_selector.support_])
+        print('===== Feature selection was done... =====')
+        # Select only selected feature
+        X_train_selected = X_train.iloc[:, feature_selector.support_]
+        X_test_selected = X_test.iloc[:, feature_selector.support_]
+    else:
+        X_train_selected = X_train
+        X_test_selected = X_test
+
     for key in models.keys():
-        ##################################################################################
-        # Feature Selection 
-        ##################################################################################
-        if feature_select:
-            print('===== Feature selection (' + key + ') by Boruta starts... =====')
-            feature_selector = BorutaPy(
-                models[key]
-                , n_estimators='auto'
-                , alpha=0.1
-                , max_iter=100
-                , random_state=42
-                , verbose=0                
-            )
-            feature_selector.fit(X_train.values, y_train.values)
-            print('Selected Feature:') 
-            print(X_train.columns[feature_selector.support_])
-            print('===== Feature selection was done... =====')
-            # Select only selected feature
-            X_train_selected = X_train.iloc[:, feature_selector.support_]
-            X_test_selected = X_test.iloc[:, feature_selector.support_]
-        else:
-            X_train_selected = X_train
-            X_test_selected = X_test
 
         ##################################################################################
         # GridSearchCV 
@@ -143,7 +148,7 @@ def cls_model_deployer(models, X_train, y_train, X_test
                                 , 'feature_name': X_train_selected.columns
                                 , 'estimator':models[key]
                                 , 'feature_importances':None
-                                , 'prediction':clf.predict(X_test)
+                                , 'prediction':clf.predict(X_test_selected)
                                 }
     return results
 

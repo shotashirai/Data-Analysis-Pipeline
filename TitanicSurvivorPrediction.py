@@ -22,6 +22,8 @@ import os, sys
 sys.path.append(os.pardir) # to import files in the parent directory
 import numpy as np
 import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
 
 from sklearn.linear_model import LogisticRegression
 # from sklearn.tree import DecisionTreeClassifier as DTC
@@ -38,10 +40,11 @@ from my_pipeline.dataprofile import data_profile
 from my_pipeline.datacleaning import *
 from my_pipeline.model import  cls_model_deployer
 from my_pipeline.save import save_prediction_csv, save_score_csv
-from my_pipeline.utils import memory_usage
+
 ###################################################################################
 # Import data 
 ###################################################################################
+
 # Data is sotred in the "data" directory
 df_train = load_file('data/titanic', 'train.csv')
 df_test = load_file('data/titanic', 'test.csv')
@@ -164,9 +167,10 @@ X_train = train.drop('Survived', axis=1) # Feature variable
 # Random seed
 rand_seed = 42
 
-# Build models (Feature selection (by BourutaPy) works)
+# Build models
 models = {
-    'Extra Tree':  ETC(
+    'Logistic Regression': LogisticRegression(n_jobs=-1, max_iter=500)
+    , 'Extra Tree':  ETC(
         random_state=rand_seed
         , n_estimators=26
         , max_depth=8
@@ -190,20 +194,14 @@ models = {
         , eval_metric = 'logloss'
         , use_label_encoder=False
         )
-} 
-
-# Build models (Feature selection (by BourutaPy) does not works) 
-# TODO: Solve the feature selection for those models
-
-models_NoFeatSel = {
-    'Logistic Regression': LogisticRegression(n_jobs=-1)
     , 'Linear SVC': LinearSVC(
         random_state=rand_seed
+        ,max_iter=10000
     )
     # , 'SVC': SVC(
     #     random_state=rand_seed
     # )
-}
+} 
 
 
 # Grid Search parameters ---------------------------------------------------------
@@ -240,15 +238,13 @@ gs_params['Linear SVC'] = {
 
 # SVC
 gs_params['SVC'] ={
-    'kernel':['poly','rbf']
-    ,'C': [1, 10, 100, 1000, 10000]
+    'C': [1, 10, 100, 1000, 10000]
+    , "gamma": [1, 10, 100]
+    # , 'kernel':['poly','rbf']
     }
 
 
 results = cls_model_deployer(models, X_train, y_train, X_test, gs_params=gs_params)
-
-results_NoFeatSel = cls_model_deployer(models_NoFeatSel, X_train, y_train, X_test
-                                        , gs_params=gs_params, feature_select=False)
 
 ###################################################################################
 # Deploy
@@ -256,6 +252,5 @@ results_NoFeatSel = cls_model_deployer(models_NoFeatSel, X_train, y_train, X_tes
 df_id = df_test[['PassengerId']]
 file_name = 'TitanicSurvival'
 save_prediction_csv(df_id, results, 'Survived', save_filename_head=file_name, res_dir='results_Titanic')
-save_prediction_csv(df_id, results_NoFeatSel, 'Survived', save_filename_head=file_name, res_dir='results_Titanic')
 
-save_score_csv([results, results_NoFeatSel], res_dir='results_Titanic')
+save_score_csv(results, res_dir='results_Titanic')

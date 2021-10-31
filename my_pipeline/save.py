@@ -32,23 +32,23 @@ def save_score_csv(results, save_filename_head='ScoreSummary', res_dir='results'
     score_summary.csv
 
     """
-    if len(results) > 1:
-        cols = ['Models', 'Score']
-        df_score = pd.DataFrame(index=[], columns=cols)
-        for idx in range(len(results)):
-            res_idx = results[idx]
-            df_score_temp = pd.DataFrame.from_dict({(i): res_idx[i]['score'] 
-                                            for i in res_idx.keys()}
-                                            , orient='index').reset_index()
-            df_score_temp.columns = ['Models', 'Score']
-            df_score = pd.concat([df_score, df_score_temp])
-        df_score.reset_index()
-    else:
-        df_score = pd.DataFrame.from_dict({(i): results[i]['score'] 
-                                            for i in results.keys()}
-                                            , orient='index').reset_index()
-        df_score.columns = ['Models', 'Score']
-    df_score.to_csv(res_dir + '/' + save_filename_head + '.csv', index=False)
+    # if len(results) > 1:
+    #     cols = ['Models', 'Score']
+    #     df_score = pd.DataFrame(index=[], columns=cols)
+    #     for idx in range(len(results)):
+    #         res_idx = results[idx]
+    #         df_score_temp = pd.DataFrame.from_dict({(i): res_idx[i]['score'] 
+    #                                         for i in res_idx.keys()}
+    #                                         , orient='index').reset_index()
+    #         df_score_temp.columns = ['Models', 'Score']
+    #         df_score = pd.concat([df_score, df_score_temp])
+    #     df_score.reset_index()
+    # else:
+    df_score = pd.DataFrame.from_dict({(i): results[i]['score'] 
+                                        for i in results.keys()}
+                                        , orient='index').reset_index()
+    df_score.columns = ['Models', 'Score']
+    df_score.to_csv(''.join([res_dir, '/', save_filename_head, '.csv']), index=False)
     if show_score:
         print('============ Accuracy scores ============')
         print(df_score)
