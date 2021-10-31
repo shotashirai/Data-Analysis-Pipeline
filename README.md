@@ -37,27 +37,32 @@ https://github.com/shotashirai/Uber-Demand-Forecasting-NYC
 
 ### Review of the code
 
-For the initial review of the codes, `cProfile`, `line_profiler` and `memory_profiler` were used.
-Also, to measure memory usage of a pandas dataframe, `df.info(memory_usage='deep')` and  `df.memory_usage()`  are used.
+`cProfile`, `line_profiler` and `memory_profiler` were used for the initial review of the codes.
 The profile (.stats) obtained by `python -m cProfile -o file_name.stats my_script.py` can be visualized using `snakeviz file_name.stats`
 
 These tools found that:
 
-- `data_profile()` spent ~37s to obtained the information of the dataframe, especially duplication check is the most time-consuming.
+- `data_profile()` took ~37s to obtain the information of the DataFrame, especially duplication check is the most time-consuming.
 
 - `datetime_format()` is also time-consuming (~10s)
 
-- Multiple Pandas dataframes occupy RAM, which may affect the performance of the `data_profile()`.
+- Multiple Pandas DataFrames need memory, which may affect the performance of the `data_profile()`.
 
-- Modelling section is significantly time consuming (10min to get results), especially feature selection using **BorutaPy**.
+- Modelling section is very time-consuming (10min to get results), especially feature selection using **BorutaPy**.
+
+(ref)
+line_profiler: https://github.com/rkern/line_profiler
+memroy_profiler: https://github.com/pythonprofilers/memory_profiler
 
 ### Optimization methods
 
+The major approaches to optimize the performance are:
+
 - Replace custom-made functions with built-in functions where possible.
 
-- Use memory efficient datatypes based on EDA.
+- Use memory-efficient data types based on EDA.
 
-- Do NOT create/copy unnecessary dataframes.
+- Not create/copy unnecessary DataFrames.
 
 - Restructure the code.
 
@@ -66,10 +71,10 @@ These tools found that:
 
 ### Optimization
 
-#### Datatypes in dataframes
+#### Data types in DataFrames
 
-The datatypes automatically selected by Pandas are usually int64, float64 or object which needs more memory. To reduce the memory usage, 'right' datatypes (int16, int8, float32, category) were selected based on the insights from EDA. 
-The result of the optimization of the datatypes is shown in the table below. Memory usage for dataframes of Uber data and weather data were drastically improved.
+The data types automatically selected by Pandas are usually int64, float64 or object which needs more memory. To reduce the memory usage, other memory-efficient data types (int16, int8, float32, category) were selected based on the insights from EDA. 
+The result of the optimization of the data types is shown in the table below. Memory usage for DataFrames of Uber data and weather data were drastically improved after changing the data types.
 
 |              | Before optimization | After optimization |
 | ------------ | ------------------- | ------------------ |
@@ -82,9 +87,9 @@ The result of the optimization of the datatypes is shown in the table below. Mem
 
 #### BorutaPy
 
-Boruta is a strong feature selection algorithm designed as a wrapper around a Random Forest classification algorithm. However, it is ***slow***. In this code, the feature selection by Boruta is the main bottleneck for efficient computation. Boruta is basically implemented with Random Forest classification, but other models can be used and result in better performance. (ref: https://github.com/scikit-learn-contrib/boruta_py/issues/80)
+Boruta is a strong feature selection algorithm designed as a wrapper around a Random Forest classification algorithm. However, it is ***slow***. In this code, the feature selection by Boruta is the main bottleneck for efficient computation. Boruta is normally implemented with Random Forest classification, but other models can be used and result in better performance. (ref: https://github.com/scikit-learn-contrib/boruta_py/issues/80)
 
-To compare the performance, three regressor models (Random Forest, XGBoost, lightGBM) were tested. The table below shows the elapsed time to select features and the accuracy of the prediction (MAPE: Mean Absolute Percentage Error). All models show very similar accuracy values (1.6 +/- 0.1%), but lightGBM shows a significant performance for efficient computation. So, an optimized version of the code, **lightGBM** is used for feature selection with BorutaPy.
+To compare the performance, three regressor models (Random Forest, XGBoost, lightGBM) were tested. The table below shows the elapsed time to select features and the accuracy of the prediction (MAPE: Mean Absolute Percentage Error). All models show very similar accuracy values (1.6 +/- 0.1%), but lightGBM shows a significant improvemnt of the performance for efficient computation. So, an optimized version of the code, **lightGBM** is used for feature selection with BorutaPy.
 
 | Model                   | Elapsed time | Accuracy (MAPE) |
 | ----------------------- | ------------ | --------------- |
@@ -100,43 +105,43 @@ This section loads data and prepares for further analysis in later sections.
 
 - `load_file()` was removed due to less flexibility to load files.
 
-- A code to load data from .csv files was directly written on the main code to select data attributes and proper datatypes.
+- A code to load data from .csv files was directly written on the main code to select data attributes and proper data types.
 
-- Weather data is loaded using `glob` module that allows getting a list of files in a directory. Datatypes are selected after generating a weather dataframe (`df_weather`).
+- Weather data is loaded using `glob` module that allows getting a list of files in a directory. Data types are selected after generating a weather DataFrame (`df_weather`).
 
 - Weather data with a period (2015-01-01 - 2015-06-30) is extracted in the loading section, leading to memory usage reduction.
 
-To create/format dataframe is done in this section and the section of 'Preprocessing for analysis' is not needed anymore.
+To create/format DataFrame is done in this section and the section of 'Preprocessing for analysis' is not needed anymore.
 
 ##### Preprocessing
 
 The "Preprocessing" section get hourly statistics of Uber rides and concatenates the Uber data and the weather data.
 
-- A single dataframe (`df_uber_hourly`) obtained from the original Uber dataframe contains all required variables.
+- A single DataFrame (`df_uber_hourly`) obtained from the original Uber DataFrame contains all required variables (e.g., rides for each borough).
 
 - `df_model` used for modelling are created from `df_uber_hourly` and `df_weather`.
 
-While the old code generated multiple dataframes, the optimized code minimizes creating dataframes which helps to reduce memory usage.
+While the old code generated multiple DataFrames, the optimized code minimizes creating DataFrames which helps to reduce memory usage.
 
 ##### Model Deployment
 
 This section builds and trains XGBoost model and implement time-series forecasting using the trained model. 
 
-- `prediction_XGBoost()` is removed because it is complicated and is likely to cause low readability and  maintainability.
+- `prediction_XGBoost()` is removed because it is complicated and is likely to cause low readability and low maintainability.
 
 - `TimeSeries_XGBoost()` was created. This function simply trains and return predicted values for time-series data. XGBoost (regressor) is used as a model.
 
-- Model building and feature selection have been done outside of the model deployment function. This way make it easy to read the code and tune parameters.
+- Model building and feature selection have been done outside of the model deployment function. This way makes it easy to read the code and tune parameters.
 
 - As mentioned in the section above (BorutaPy), lightGBM is used for feature selection with BorutaPy.
 
 ##### Function: data_profile()
 
-This function returns the profile of a dataframe. To improve the performance,
+This function returns the profile of a DataFrame. To improve the performance,
 
 - replace an original method with a built-in function
 
-- reduce dataframes created and use a single dataframe to store the information
+- reduce DataFrames created and use a single DataFrame to store the information
 
 ##### Function: gen_lagdata()
 
@@ -170,9 +175,9 @@ These changes made the function simple and short.
 
 #### Memory usage
 
-##### Memory usage of the major dataframes
+##### Memory usage of the major DataFrames
 
-Memory usage for major dataframes is also drastically improved by using proper datatypes as shown below.
+Memory usage for major DataFrames is also drastically improved by using proper data types as shown below.
 
 |              | Before optimization | After optimization |
 | ------------ | ------------------- | ------------------ |
@@ -215,7 +220,7 @@ After optimization, the readability of the code is enhanced.
 ## Review of the code - Titanic Survivor Prediction
 
 The code for titanic survivor prediction has a small bug (feature selection was implemented for each model). To fix the bugs, `cls_model_deployer()` was modified.
-The elapsed time before and after fixing the bugs are shown on the table below. As can be seen, the performance of the code is slightly improved.
+The elapsed time before and after fixing the bugs are shown in the table below. As can be seen, the performance of the code is slightly improved.
 
 |                             | Before fixing bugs  | After fixing bugs  |
 | --------------------------- | ------------------- | ------------------ |
