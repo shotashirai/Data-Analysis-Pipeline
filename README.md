@@ -43,9 +43,9 @@ The profile (.stats) obtained by `python -m cProfile -o file_name.stats my_scrip
 
 These tools found that:
 
-- `data_profile()` spent ~37s to obtained the information of the dataframe, especially duplication check is the most time consuming.
+- `data_profile()` spent ~37s to obtained the information of the dataframe, especially duplication check is the most time-consuming.
 
-- `datetime_format()` is also time consuming (`10s)
+- `datetime_format()` is also time-consuming (~10s)
 
 - Multiple Pandas dataframes occupy RAM, which may affect the performance of the `data_profile()`.
 
@@ -53,7 +53,7 @@ These tools found that:
 
 ### Optimization methods
 
-- Replace custom-made function with built-in function where possible.
+- Replace custom-made functions with built-in functions where possible.
 
 - Use memory efficient datatypes based on EDA.
 
@@ -61,15 +61,15 @@ These tools found that:
 
 - Restructure the code.
 
-*Multiprocessing on CPU is already used in some models.
-**Multiprocessing on GPU is not consider in this time.
+*1 Multiprocessing on CPU is already used in some models.
+*2 Multiprocessing on GPU is not considered at this stage.
 
 ### Optimization
 
 #### Datatypes in dataframes
 
 The datatypes automatically selected by Pandas are usually int64, float64 or object which needs more memory. To reduce the memory usage, 'right' datatypes (int16, int8, float32, category) were selected based on the insights from EDA. 
-The result of the optimization of the datatypes is shown on the table below. Memory usage for dataframes of Uber data and weather data were drastically improved.
+The result of the optimization of the datatypes is shown in the table below. Memory usage for dataframes of Uber data and weather data were drastically improved.
 
 |              | Before optimization | After optimization |
 | ------------ | ------------------- | ------------------ |
@@ -84,7 +84,7 @@ The result of the optimization of the datatypes is shown on the table below. Mem
 
 Boruta is a strong feature selection algorithm designed as a wrapper around a Random Forest classification algorithm. However, it is ***slow***. In this code, the feature selection by Boruta is the main bottleneck for efficient computation. Boruta is basically implemented with Random Forest classification, but other models can be used and result in better performance. (ref: https://github.com/scikit-learn-contrib/boruta_py/issues/80)
 
-To compare the performance, three regressor models (Random Forest, XGBoost, lightGBM) were tested. The table below shows the elapsed time to select features and accuracy of the prediction (MAPE: Mean Absolute Percentage Error). All models shows very similar accuracy values (1.6 +/- 0.1%), but lightGBM shows a significant performance for efficient computation. So, optimized version of the code, **lightGBM** is used for feature selection with BorutaPy.
+To compare the performance, three regressor models (Random Forest, XGBoost, lightGBM) were tested. The table below shows the elapsed time to select features and the accuracy of the prediction (MAPE: Mean Absolute Percentage Error). All models show very similar accuracy values (1.6 +/- 0.1%), but lightGBM shows a significant performance for efficient computation. So, an optimized version of the code, **lightGBM** is used for feature selection with BorutaPy.
 
 | Model                   | Elapsed time | Accuracy (MAPE) |
 | ----------------------- | ------------ | --------------- |
@@ -96,21 +96,21 @@ To compare the performance, three regressor models (Random Forest, XGBoost, ligh
 
 ##### Import data
 
-This section loads data and prepare for further analysis in later sections.
+This section loads data and prepares for further analysis in later sections.
 
 - `load_file()` was removed due to less flexibility to load files.
 
-- A code to load data from csv files was directly written on the main code to select data attributes and proper datatypes.
+- A code to load data from .csv files was directly written on the main code to select data attributes and proper datatypes.
 
 - Weather data is loaded using `glob` module that allows getting a list of files in a directory. Datatypes are selected after generating a weather dataframe (`df_weather`).
 
-- Weather data with a period (2015-01-01 - 2015-06-30) is extracted in loading section, leading to memory usage reduction.
+- Weather data with a period (2015-01-01 - 2015-06-30) is extracted in the loading section, leading to memory usage reduction.
 
-To create/format dataframe is done in this section and the the section of 'Preprocessing for analysis' is not needed anymore.
+To create/format dataframe is done in this section and the section of 'Preprocessing for analysis' is not needed anymore.
 
 ##### Preprocessing
 
-"Preprocessing" section get a hourly statistics of Uber rides and concatenates the Uber data and the weather data.
+The "Preprocessing" section get hourly statistics of Uber rides and concatenates the Uber data and the weather data.
 
 - A single dataframe (`df_uber_hourly`) obtained from the original Uber dataframe contains all required variables.
 
@@ -124,7 +124,7 @@ This section builds and trains XGBoost model and implement time-series forecasti
 
 - `prediction_XGBoost()` is removed because it is complicated and is likely to cause low readability and  maintainability.
 
-- `TimeSeries_XGBoost()` was created. This function simply train and return predicted values for time-series data. XGBoost (regressor) is used as a model.
+- `TimeSeries_XGBoost()` was created. This function simply trains and return predicted values for time-series data. XGBoost (regressor) is used as a model.
 
 - Model building and feature selection have been done outside of the model deployment function. This way make it easy to read the code and tune parameters.
 
@@ -132,15 +132,15 @@ This section builds and trains XGBoost model and implement time-series forecasti
 
 ##### Function: data_profile()
 
-This function returns profile of a dataframe. To improve the performance,
+This function returns the profile of a dataframe. To improve the performance,
 
-- replace an original method with built-in function
+- replace an original method with a built-in function
 
 - reduce dataframes created and use a single dataframe to store the information
 
 ##### Function: gen_lagdata()
 
-This function is used for generating lag feature. In the optimized version,
+This function is used for generating lag features. In the optimized version,
 
 - removed `df.copy()`
 
@@ -155,8 +155,8 @@ These changes made the function simple and short.
 
 #### Time Efficiency
 
- `time python UberDemandPrediction.py` measures the elapsed time to run entire code. Elapsed time for each code section wa measured with `time()` module.
- As shown on the table below, the performance of the code is significantly improved (reduce computation time by ~60%) after optimization.
+ `time python UberDemandPrediction.py` measures the elapsed time to run the entire code. Elapsed time for each code section was measured with the `time()` module.
+ As shown in the table below, the performance of the code is significantly improved (reduce computation time by ~60%) after optimization.
 
 |                             | Before optimization | After optimization |
 | --------------------------- | ------------------- | ------------------ |
@@ -189,21 +189,21 @@ Memory usage for major dataframes is also drastically improved by using proper d
 
 **--- Before Optimization ---**
 
-- Peak memory consumption is ~4GB
-- The memory usage stayed on ~2GB after the peak
+- Peak memory consumption was ~4GB
+- The memory usage stayed at ~2GB after the peak
 ![MemoryUsage_before_Opt](images/MemoryUsage_UberDemand_b4opt.png)
 
 
 **--- After Optimization ---**
 
-- Peak memory consumption is ~2GB
-- The memory usage stayed on below 500MB after the peak
+- Peak memory consumption was ~2GB
+- The memory usage stayed at below 500MB after the peak
 
 ![MemoryUsage_After_Opt](images/MemoryUsage_UberDemand_afteropt.png)
 
 #### Readability of the code
 
-After optimization, readability of the code is enhanced.
+After optimization, the readability of the code is enhanced.
 
 ### Note
 
