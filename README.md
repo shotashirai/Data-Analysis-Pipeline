@@ -27,6 +27,6 @@ https://github.com/shotashirai/Titanic-Survival-Prediction
 
 **(Uber Demand Forecasting)**  
 Jupyter Notebook  
-https://github.com/shotashirai/Data-Analysis-Pipeline/blob/main/EDA_Jupyter_Notebook/Uber-Demand-Forecasting_EDA_Model.ipynb
+https://github.com/shotashirai/Data-Analysis-Pipeline/blob/main/EDA_Jupyter_Notebook/Uber-Demand-Forecasting_EDA_Model.ipynb  
 Original Repository  
 https://github.com/shotashirai/Uber-Demand-Forecasting-NYC  
