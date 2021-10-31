@@ -210,3 +210,13 @@ After optimization, readability of the code is enhanced.
 - **test** directory contains the test code used for optimization.
 - **archived** directory contains the old code.
 - **code_profile** directory stores profile obtained by `cProfile`. These can be visualized using `snakeviz UberProfile.stats`
+
+
+## Review of the code - Titanic SUrvivor Prediction
+
+The code for titanic survivor prediction has a small bug (feature selection was implemented for each model). To fix the bugs, `cls_model_deployer()` was modified.
+The elapsed time before and after fixing the bugs are shown on the table below. As can be seen, the performance of the code is slightly improved.
+
+|                             | Before fixing bugs  | After fixing bugs  |
+| --------------------------- | ------------------- | ------------------ |
+| Elapsed time (real)         | 44s                 | 31s                |
