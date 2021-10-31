@@ -2,8 +2,9 @@ import math
 import pandas as pd
 import os, sys
 sys.path.append(os.pardir) # to import files in the parent directory
+import glob
 
-@profile
+# @profile
 def data_profile_old(df):
     """ Data profile
     
@@ -65,6 +66,8 @@ def data_profile_old(df):
     return df_profile
 # @profile
 def data_profile_new(df):
+    
+    # Create dataframe to store information
     df_profile = pd.DataFrame(index=df.columns, columns=['Data type', 'Null count', 'Null ratio (%)', 'Non-null count', 'Distinct'])
     
     # Data type
@@ -85,20 +88,23 @@ def data_profile_new(df):
 
     # Number of duplicated rows
     number_of_duplicates = df.duplicated(keep='first').sum() 
-    # number_of_duplicates = len(df)-len(df.drop_duplicates())
-    if number_of_duplicates > 0:
-        print(' '.join([str(number_of_duplicates), 'rows are duplicated']))
-    else: print('No duplicated row')
     
     # dataframe name
-    df_name = df.name
+    try:
+        df.name
+    except AttributeError: df_name = 'Input Dataframe'
+    else: df_name = df.name
 
     print(''.join(['=== Data profile (', df_name, ') ========================================']))
     print(df_profile)
     print('===========================================================================')
 
-    return df_profile
+    # number_of_duplicates = len(df)-len(df.drop_duplicates())
+    if number_of_duplicates > 0:
+        print(' '.join(['*** Warnings:', str(number_of_duplicates), 'rows are duplicated ***']))
+    else: print('*** No duplicated row ***')
 
+    return df_profile
 
 
 
@@ -107,9 +113,53 @@ if __name__ == '__main__':
     dir_name_Uber = 'data/uber-tlc-foil-response/uber-trip-data'
     dir_name_Weather = 'data/weather'
 
+
+    # Data is stored in the "data" directory
+    dir_name_Uber = 'data/uber-tlc-foil-response/uber-trip-data'
+    dir_name_Weather = 'data/weather'
+
     # Uber data
-    df_uber = pd.read_csv(dir_name_Uber +'/uber-raw-data-janjune-15.csv')
-    df_uber.name = 'Uber rides data'
-    
-    data_profile_old(df_uber)
-    # data_profile_new(df_uber)
+    df_uber = pd.read_csv('/'.join([dir_name_Uber, 'uber-raw-data-janjune-15.csv'])
+                        , usecols=['Pickup_date', 'locationID']
+                        , dtype={'locationID': 'int16'})
+    # Reference for Borough
+    borough_ref = taxi_zone = pd.read_csv('data/uber-tlc-foil-response/uber-trip-data/taxi-zone-lookup.csv'
+                                        , usecols=['LocationID', 'Borough']
+                                        , dtype={'LocationID': 'int16', 'Borough':'category'}
+                                        )
+
+    df_uber['Borough'] = df_uber['locationID'].map(borough_ref.set_index('LocationID')['Borough'])
+    df_uber = df_uber.drop('locationID', axis=1)
+
+    del borough_ref
+
+    # get a file list of the weather data
+    weather_filelist = glob.glob('/'.join([dir_name_Weather,'*.csv']))
+
+    # Get a list of the weather data
+    df_list = [pd.read_csv(filename
+                            , usecols=[0, 28] #0: datetime, 28: New York 
+                            , names=('datetime', os.path.splitext(os.path.basename(filename))[0]) # Rename the columns
+                            , header=0
+                            , parse_dates=['datetime']
+                            , index_col='datetime'
+                            ) for filename in weather_filelist]
+    # Concatenate the dataframes in the list
+    df_weather = pd.concat(df_list, axis=1)
+
+    # Extract data with the same time period of the uber data
+    df_weather = df_weather.loc['2015-01-01':'2015-06-30']
+
+    # Convert the data types (No NaN values for this time period and range of values were already checked)
+    df_weather = df_weather.astype({
+        'temperature': 'float32'
+        , 'humidity': 'int8'
+        , 'pressure': 'int16'
+        , 'weather_description': 'category'
+        , 'wind_direction': 'int16'
+        , 'wind_speed': 'int8'
+    })
+
+    # df_uber.name = 'Uber rides (2015)'
+    df_weather.name = 'Weather data in NY (2015)'
+    data_profile_new(df_uber)
