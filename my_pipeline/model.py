@@ -1,5 +1,6 @@
 # coding: utf-8
 import numpy as np
+from itertools import compress
 from sklearn.linear_model import LinearRegression
 from boruta import BorutaPy
 from sklearn.model_selection import GridSearchCV
@@ -24,7 +25,7 @@ class BinaryLinearRegression:
         binary_prediction = np.where(prediction > threshold, 1, 0)
         return binary_prediction
 
-
+# @profile
 def cls_model_deployer(models, X_train, y_train, X_test
                 , feature_select=True, gs_params=None, cv=10):
     
@@ -146,7 +147,7 @@ def cls_model_deployer(models, X_train, y_train, X_test
                                 }
     return results
 
-# Custom function for time series analys using XGBoost
+# Custom function for time series analysis using XGBoost
 def prediction_XGBoost(df_train, df_test, model, target_list
                        , feature_select=False, log_transform=False, include_borough=False):
     
@@ -258,4 +259,45 @@ def prediction_XGBoost(df_train, df_test, model, target_list
             
     return results
 
-        
+def TimeSeries_XGBoost(model, df_train, df_test, label_col):
+
+    def _mape(true, pred): 
+        true, pred = np.array(true), np.array(pred)
+        return np.mean(np.abs((true - pred) / true)) * 100
+
+    y_train = df_train[label_col]
+    y_test = df_test[label_col]
+
+    X_train = df_train.drop(label_col, axis=1)
+    X_test = df_test.drop(label_col, axis=1)
+
+    # Training model
+    model.fit(X_train, y_train
+    , eval_set = [(X_train, y_train), (X_test, y_test)]
+    , verbose=0
+    )
+
+    # Prediction
+    Y_predict = model.predict(X_test)
+
+     # Accuracy (RMSE)
+    mse = mean_squared_error(y_test, Y_predict)
+    rmse = np.sqrt(mse)
+    print('RMSE: ' + str(np.round(rmse, 2)))
+
+    # Accuracy (MAPE)
+    mape = _mape(y_test, Y_predict)
+    print('MAPE: ' + str(np.round(mape, 2)) +'%')
+
+    results = {
+        'feature_importances': model.feature_importances_
+        ,'mape': mape
+        ,'rmse': rmse
+        ,'X_train': X_train
+        ,'X_test': X_test
+        ,'Y_train': y_train
+        ,'Y_test': y_test
+        ,'Y_predict': Y_predict
+        }
+    
+    return results
