@@ -16,6 +16,7 @@ line-profiler = "*"
 snakeviz = "*"
 memory-profiler = "*"
 psutil = "*"
+lightgbm = "*"
 
 [dev-packages]
 
