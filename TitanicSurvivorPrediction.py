@@ -18,6 +18,7 @@ Note: Tested Python version 3.8.10
 ###################################################################################
 # Import libraries 
 ###################################################################################
+from my_pipeline.utils import memory_usage
 import os, sys
 sys.path.append(os.pardir) # to import files in the parent directory
 import numpy as np
@@ -54,12 +55,22 @@ df_test["Survived"] = np.nan
 df_full = pd.concat([df_train, df_test], axis=0)
 df_full.name = 'df_full'
 
+# df_full.info(memory_usage='deep')
+
+df_full = df_full.astype({
+    'Pclass':'int8'
+    , 'Sex': 'category'
+    , 'SibSp': 'int8'
+    , 'Parch': 'int8'
+})
+
+# df_full.info(memory_usage='deep')
 ###################################################################################
 # Data Profile
 ###################################################################################
-data_profile(df_train)
-data_profile(df_test)
-# data_profile(df_full)
+# data_profile(df_train)
+# data_profile(df_test)
+data_profile(df_full)
 
 ###################################################################################
 # Data Cleaning 
