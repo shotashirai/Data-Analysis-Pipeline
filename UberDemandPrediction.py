@@ -226,8 +226,8 @@ for borough in Borough_list:
     selected_feat = X_train.iloc[:,feat_selector_lgb.support_].columns.to_list() + [borough]
 
     # Extract selected features
-    df_train_selected = df_train[selected_feat]
-    df_test_selected = df_test[selected_feat]
+    df_train_selected = df_train_model[selected_feat]
+    df_test_selected = df_test_model[selected_feat]
 
     # Forecasting using XGBoost
     results_lgb = TimeSeries_XGBoost(model_tuned, df_train_selected, df_test_selected, borough)
