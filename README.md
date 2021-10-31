@@ -50,9 +50,9 @@ These tools found that:
 
 - Modelling section is very time-consuming (10min to get results), especially feature selection using **BorutaPy**.
 
-(ref)
-line_profiler: https://github.com/rkern/line_profiler
-memroy_profiler: https://github.com/pythonprofilers/memory_profiler
+(ref)  
+line_profiler: https://github.com/rkern/line_profiler  
+memroy_profiler: https://github.com/pythonprofilers/memory_profiler  
 
 ### Optimization methods
 
@@ -66,7 +66,7 @@ The major approaches to optimize the performance are:
 
 - Restructure the code.
 
-*1 Multiprocessing on CPU is already used in some models.
+*1 Multiprocessing on CPU is already used in some models.  
 *2 Multiprocessing on GPU is not considered at this stage.
 
 ### Optimization
@@ -78,9 +78,9 @@ The result of the optimization of the data types is shown in the table below. Me
 
 |              | Before optimization | After optimization |
 | ------------ | ------------------- | ------------------ |
-| Uber data    | 4.4 GB              | 122.5MB            |
-| Weather data | 564.6 KB            | 82.4 KB            |
-| Location ref | 37.8KB              | 1.6 KB             |
+| Uber data    | 4.4GB              | 122.5MB            |
+| Weather data | 564.6KB            | 82.4KB            |
+| Location ref | 37.8KB              | 1.6KB             |
 | df_model     | 8.2MB               | 7.9MB              |
 
 *` df.info(memory_usage='deep')` is used for memory usage measurements.
@@ -93,9 +93,9 @@ To compare the performance, three regressor models (Random Forest, XGBoost, ligh
 
 | Model                   | Elapsed time | Accuracy (MAPE) |
 | ----------------------- | ------------ | --------------- |
-| Random Forest Regressor | ~176 s       | 1.7%            |
-| XGBoost                 | ~170 s       | 1.5%            |
-| lightGBM                | ~26 s        | 1.63%           |
+| Random Forest Regressor | ~176s       | 1.7%            |
+| XGBoost                 | ~170s       | 1.5%            |
+| lightGBM                | ~26s        | 1.63%           |
 
 #### Restructuring code
 
@@ -182,8 +182,8 @@ Memory usage for major DataFrames is also drastically improved by using proper d
 |              | Before optimization | After optimization |
 | ------------ | ------------------- | ------------------ |
 | Uber data    | 4.4 GB              | 122.5MB            |
-| Weather data | 564.6 KB            | 82.4 KB            |
-| Location ref | 37.8KB              | 1.6 KB             |
+| Weather data | 564.6KB            | 82.4KB            |
+| Location ref | 37.8KB              | 1.6KB             |
 | df_model     | 8.2MB               | 7.9MB              |
 
 *` df.info(memory_usage='deep')` is used for memory usage measurements.
