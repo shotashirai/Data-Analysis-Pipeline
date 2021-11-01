@@ -210,8 +210,8 @@ for borough in Borough_list:
                     )
 
     # Feature Selection
-    y_train = df_train[borough]
-    X_train = df_train.drop(borough, axis=1)
+    y_train = df_train_model[borough]
+    X_train = df_train_model.drop(borough, axis=1)
 
     # Feature selection with BorutaPy + LightGBM ----------------------------------------------
 
